@@ -17,7 +17,15 @@ class Population:
                 car.update(obstacles_rects) 
                 alive_count += 1
         return alive_count
-
+    def get_best_car(self):
+        # Ordenamos temporalmente para encontrar al que tiene mejor score
+        # Nota: No queremos alterar el orden de la lista real self.cars, así que usamos sorted()
+        sorted_cars = sorted(self.cars, key=lambda x: x.score, reverse=True)
+        
+        for car in sorted_cars:
+            if car.alive:
+                return car
+        return None
     def draw(self, screen):
         for car in self.cars:
             if car.alive:

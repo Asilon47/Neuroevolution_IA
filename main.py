@@ -13,7 +13,7 @@ def run_simulation():
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("Arial", 24)
 
-    population = Population(size=50)
+    population = Population(size=10)
     obstacles = [] 
         
     SPAWN_EVENT = pygame.USEREVENT + 1

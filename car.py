@@ -99,6 +99,12 @@ class Car:
         if len(inputs) == 0: return [0]*10
         return inputs
 
+    def spawn_target(self):
+        """Genera un objetivo aleatorio SOLO para este coche"""
+        # Asegúrate de importar random y las constantes WIDTH/HEIGHT arriba
+        self.target.x = random.randint(50, WIDTH - 50)
+        self.target.y = random.randint(50, HEIGHT - 50)
+
     def reset(self):
         self.x, self.y = WIDTH / 2, HEIGHT / 2
         self.angle = 0
@@ -108,8 +114,8 @@ class Car:
         self.score = 0
         self.prev_dist_to_target = None
         self.spawn_target()
-    def drive(self, target_pos):
-        inputs = self.get_data(target_pos)
+    def drive(self):
+        inputs = self.get_data()
         outputs = self.controller.forward(inputs)
         
         turn_val = outputs[0]
@@ -117,7 +123,7 @@ class Car:
         
         self.angle -= turn_val * 5 
         if speed_val > 0:
-            self.speed = speed_val * 5
+            self.speed = speed_val * 10
         else:
             self.speed = 0
 
