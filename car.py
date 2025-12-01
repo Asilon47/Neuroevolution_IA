@@ -67,7 +67,7 @@ class Car:
         
         inputs = []
         for dist, point in self.radars:
-            val = 1 - (dist / 300)
+            val = 1 - (dist / LASER_DISTANCE)
             inputs.append(val)
         
         
@@ -132,7 +132,7 @@ class Car:
         self.score += 0.1
 
         if is_too_close:
-            self.score -= 40
+            self.score -= 1
 
         self.drive(target_rect.center)
 

@@ -10,11 +10,12 @@ class Population:
         self.generation = 1
         self.cars = [Car() for _ in range(size)]
 
-    def update(self, obstacles_rects):
+    def update(self, obstacles_rects, target_rect): 
         alive_count = 0
         for car in self.cars:
             if car.alive:
-                car.update(obstacles_rects)
+                # Pass it down to the car
+                car.update(obstacles_rects, target_rect) 
                 alive_count += 1
         return alive_count
 
