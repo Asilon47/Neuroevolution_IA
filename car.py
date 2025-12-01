@@ -10,7 +10,7 @@ COLOR_CAR = (255, 255, 0)
 COLOR_OBSTACLE = (255, 50, 50)
 COLOR_TEXT = (255, 255, 255)
 LASER_DISTANCE = 200
-
+COLOR_TARGET = (0, 255, 0) 
 
 def get_distance(sensor_angle, car_x, car_y, obstacles_rects):
     """
@@ -59,24 +59,40 @@ class Car:
 
         self.radars = []
 
-        self.controller = NeuralNetwork(8, 8, 2)
+        self.controller = NeuralNetwork(10, 8, 2)
 
         self.reset()
 
-    def get_data(self):
-        """
-        Normalize sensor readings for the Neural Network.
-        Raw Distance: 0 to 300
-        Normalized:   1.0 (Close/Danger) to 0.0 (Far/Safe)
-        """
+    def get_data(self, target_pos):
+        
         inputs = []
         for dist, point in self.radars:
-            val = 1 - (dist / LASER_DISTANCE)
+            val = 1 - (dist / 300)
             inputs.append(val)
+        
+        
+        
+        tx, ty = target_pos
+        dx = tx - self.x
+        dy = self.y - ty 
+        
+        
+        target_rad = math.atan2(dy, dx) 
+        target_deg = math.degrees(target_rad)
+        
+        
+        
+        delta_angle = (target_deg - self.angle) % 360
+        if delta_angle > 180: delta_angle -= 360
+        
+        
+        inputs.append(delta_angle / 180)
+        
+        
+        dist_to_target = math.hypot(dx, dy)
+        inputs.append(min(dist_to_target / 600, 1))
 
-        if len(inputs) == 0:
-            return [0, 0, 0, 0, 0]
-
+        if len(inputs) == 0: return [0]*7
         return inputs
 
     def reset(self):
@@ -85,26 +101,22 @@ class Car:
         self.speed = 0
         self.alive = True
         self.rect.center = (self.x, self.y)
-        self.distance_traveled = 0
+        self.score = 0
 
-    def drive(self):
-        """Replaces keyboard input with Neural Network output"""
-
-        inputs = self.get_data()
-
+    def drive(self, target_pos):
+        inputs = self.get_data(target_pos)
         outputs = self.controller.forward(inputs)
-
+        
         turn_val = outputs[0]
         speed_val = outputs[1]
-
-        self.angle -= turn_val * 5
-
+        
+        self.angle -= turn_val * 5 
         if speed_val > 0:
             self.speed = speed_val * 5
         else:
             self.speed = 0
 
-    def update(self, obstacles_rects):
+    def update(self, obstacles_rects, target_rect):
         if not self.alive:
             return
 
@@ -117,24 +129,29 @@ class Car:
             if dist < 40:
                 is_too_close = True
 
+        self.score += 0.1
+
         if is_too_close:
-            self.distance_traveled -= 10
-        self.drive()
+            self.score -= 40
+
+        self.drive(target_rect.center)
 
         rad = math.radians(self.angle)
-        dx = math.cos(rad) * self.speed
-        dy = math.sin(rad) * self.speed
-        self.x += dx
-        self.y -= dy
-        self.distance_traveled += math.hypot(dx, dy)
+        self.x += math.cos(rad) * self.speed
+        self.y -= math.sin(rad) * self.speed
 
         if self.x > WIDTH or self.x < 0 or self.y > HEIGHT or self.y < 0:
             self.alive = False
-            self.distance_traveled -= 400
-
+            '''
+            cancelado porque todos acaban chocando
+            self.score -= 400
+            '''
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=(self.x, self.y))
-
+        if self.rect.colliderect(target_rect):
+            self.score += 500 
+            return True
+        
         if self.rect.collidelist(obstacles_rects) != -1:
             self.alive = False
 

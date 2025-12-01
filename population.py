@@ -30,9 +30,9 @@ class Population:
         return True
 
     def evolve(self):
-        self.cars.sort(key=lambda x: x.distance_traveled, reverse=True)
+        self.cars.sort(key=lambda x: x.score, reverse=True)
         print(
-            f"Gen {self.generation} Best Fitness: {int(self.cars[0].distance_traveled)}"
+            f"Gen {self.generation} Best Fitness: {int(self.cars[0].score)}"
         )
 
         new_cars = []

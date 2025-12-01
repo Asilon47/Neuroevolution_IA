@@ -1,7 +1,7 @@
 import pygame
 import math
 import random
-from car import CAR_SIZE, WIDTH, HEIGHT, COLOR_BG, COLOR_OBSTACLE, COLOR_TEXT, FPS
+from car import CAR_SIZE, WIDTH, HEIGHT, COLOR_BG, COLOR_OBSTACLE, COLOR_TEXT, FPS, COLOR_TARGET
 
 
 class Obstacle:
