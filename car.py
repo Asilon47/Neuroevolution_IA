@@ -59,7 +59,7 @@ class Car:
 
         self.radars = []
 
-        self.controller = NeuralNetwork(10, 8, 2)
+        self.controller = NeuralNetwork(10, 16, 2)
 
         self.reset()
 
@@ -92,7 +92,7 @@ class Car:
         dist_to_target = math.hypot(dx, dy)
         inputs.append(min(dist_to_target / 600, 1))
 
-        if len(inputs) == 0: return [0]*7
+        if len(inputs) == 0: return [0]*10
         return inputs
 
     def reset(self):
@@ -102,6 +102,7 @@ class Car:
         self.alive = True
         self.rect.center = (self.x, self.y)
         self.score = 0
+        self.prev_dist_to_target = None
 
     def drive(self, target_pos):
         inputs = self.get_data(target_pos)
@@ -136,6 +137,14 @@ class Car:
 
         self.drive(target_rect.center)
 
+        curr_dist = math.hypot(target_rect.centerx - self.x, target_rect.centery - self.y)
+
+        if self.prev_dist_to_target is not None:
+            difference = self.prev_dist_to_target - curr_dist
+            self.score += difference * 0.5
+
+        self.prev_dist_to_target = curr_dist
+
         rad = math.radians(self.angle)
         self.x += math.cos(rad) * self.speed
         self.y -= math.sin(rad) * self.speed
@@ -149,7 +158,7 @@ class Car:
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=(self.x, self.y))
         if self.rect.colliderect(target_rect):
-            self.score += 500 
+            self.score += 200 
             return True
         
         if self.rect.collidelist(obstacles_rects) != -1:
@@ -157,7 +166,7 @@ class Car:
 
     def draw(self, screen):
         for dist, point in self.radars:
-            color = (0, 255, 0) if dist > 60 else (255, 0, 0)
+            color = (0, 255, 0) if dist > 40 else (255, 0, 0)
 
             pygame.draw.line(
                 screen,
