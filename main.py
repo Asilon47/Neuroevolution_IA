@@ -15,10 +15,7 @@ def run_simulation():
 
     population = Population(size=50)
     obstacles = [] 
-    
-    
-    target_rect = pygame.Rect(WIDTH/2, HEIGHT/2, 30, 30)
-    
+        
     SPAWN_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(SPAWN_EVENT, 750)
 
@@ -31,46 +28,40 @@ def run_simulation():
                 obstacles.append(Obstacle())
 
         if not population.is_extinct():
-            
+            # Actualizar Obstaculos
             for obs in obstacles: obs.update()
             obstacles = [obs for obs in obstacles if not obs.is_off_screen()]
             obstacle_rects = [obs.rect for obs in obstacles]
             
-            
-            
-            target_eaten = False
-            alive_count = 0
-            
-            for car in population.cars:
-                if car.alive:
-                    alive_count += 1
-                    
-                    eaten = car.update(obstacle_rects, target_rect)
-                    if eaten:
-                        target_eaten = True
-            
-            
-            if target_eaten:
-                target_rect.x = random.randint(50, WIDTH-50)
-                target_rect.y = random.randint(50, HEIGHT-50)
+            # Actualizar Población (Ya no pasamos target_rect)
+            population.update(obstacle_rects)
         
         else:
-            
+            # Evolucionar
             population.evolve()
             obstacles = [] 
-            target_rect.center = (WIDTH/2, HEIGHT/2) 
             pygame.time.delay(200)
 
-        
+        # --- DIBUJADO ---
         screen.fill(COLOR_BG) 
         
-        
-        pygame.draw.rect(screen, COLOR_TARGET, target_rect)
-        
+        # Dibujar Obstaculos
         for obs in obstacles: obs.draw(screen)
+        
+        # Dibujar Coches
         population.draw(screen)
         
-        status = f"Gen: {population.generation} | Alive: {alive_count if not population.is_extinct() else 0}"
+        # --- NUEVO: Dibujar SOLO el objetivo del mejor coche vivo ---
+        leader = population.get_best_car()
+        if leader is not None:
+            # Dibujamos su objetivo en verde
+            pygame.draw.rect(screen, COLOR_TARGET, leader.target)
+            # Opcional: Dibujar una marca sobre el líder para identificarlo
+            pygame.draw.circle(screen, (255, 255, 255), leader.rect.center, 5)
+
+        # UI
+        alive_count = sum([1 for c in population.cars if c.alive])
+        status = f"Gen: {population.generation} | Alive: {alive_count}"
         screen.blit(font.render(status, True, COLOR_TEXT), (10, 10))
 
         pygame.display.flip()

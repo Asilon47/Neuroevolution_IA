@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 from controller import NeuralNetwork
 
 WIDTH, HEIGHT = 800, 600
@@ -61,9 +62,12 @@ class Car:
 
         self.controller = NeuralNetwork(10, 16, 2)
 
+        self.target = pygame.Rect(0, 0, 30, 30)
+        self.spawn_target()
+
         self.reset()
 
-    def get_data(self, target_pos):
+    def get_data(self):
         
         inputs = []
         for dist, point in self.radars:
@@ -72,9 +76,9 @@ class Car:
         
         
         
-        tx, ty = target_pos
+        tx, ty = self.target.center
         dx = tx - self.x
-        dy = self.y - ty 
+        dy = self.y - ty
         
         
         target_rad = math.atan2(dy, dx) 
@@ -103,7 +107,7 @@ class Car:
         self.rect.center = (self.x, self.y)
         self.score = 0
         self.prev_dist_to_target = None
-
+        self.spawn_target()
     def drive(self, target_pos):
         inputs = self.get_data(target_pos)
         outputs = self.controller.forward(inputs)
@@ -117,7 +121,7 @@ class Car:
         else:
             self.speed = 0
 
-    def update(self, obstacles_rects, target_rect):
+    def update(self, obstacles_rects):
         if not self.alive:
             return
 
@@ -127,42 +131,43 @@ class Car:
             check_angle = self.angle + offset
             dist, point = get_distance(check_angle, self.x, self.y, obstacles_rects)
             self.radars.append((dist, point))
-            if dist < 40:
+            if dist < 50:
                 is_too_close = True
 
         self.score += 0.1
 
         if is_too_close:
-            self.score -= 1
+            self.score -= 2
 
-        self.drive(target_rect.center)
-
-        curr_dist = math.hypot(target_rect.centerx - self.x, target_rect.centery - self.y)
-
+        curr_dist = math.hypot(self.target.centerx - self.x, self.target.centery - self.y)
         if self.prev_dist_to_target is not None:
             difference = self.prev_dist_to_target - curr_dist
-            self.score += difference * 0.5
-
+            self.score += difference * 0.5 
         self.prev_dist_to_target = curr_dist
+
+        self.drive()
 
         rad = math.radians(self.angle)
         self.x += math.cos(rad) * self.speed
         self.y -= math.sin(rad) * self.speed
-
+        
         if self.x > WIDTH or self.x < 0 or self.y > HEIGHT or self.y < 0:
             self.alive = False
+            self.score -= 10
             '''
             cancelado porque todos acaban chocando
             self.score -= 400
             '''
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=(self.x, self.y))
-        if self.rect.colliderect(target_rect):
+
+        if self.rect.colliderect(self.target):
             self.score += 200 
-            return True
+            self.spawn_target() 
         
         if self.rect.collidelist(obstacles_rects) != -1:
             self.alive = False
+            self.score -= 10
 
     def draw(self, screen):
         for dist, point in self.radars:
