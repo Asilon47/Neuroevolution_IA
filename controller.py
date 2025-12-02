@@ -1,60 +1,88 @@
-import tensorflow as tf
 import numpy as np
-import os
-
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 class NeuralNetwork:
-    def __init__(self, input_size=5, hidden_size=8, output_size=2):
-        self.input_shape = (input_size,)
+    def __init__(self, input_size=10, hidden_size=128, output_size=2):
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
 
-        self.model = tf.keras.Sequential(
+        self.W1 = np.random.randn(input_size, hidden_size)
+        self.b1 = np.zeros(hidden_size)
+
+        self.W2 = np.random.randn(hidden_size, hidden_size // 2)
+        self.b2 = np.zeros(hidden_size // 2)
+
+        self.W3 = np.random.randn(hidden_size // 2, hidden_size // 4)
+        self.b3 = np.zeros(hidden_size // 4)
+
+        self.W4 = np.random.randn(hidden_size // 4, output_size)
+        self.b4 = np.zeros(output_size)
+
+    def forward(self, sensors):
+        z1 = np.dot(sensors, self.W1) + self.b1
+        a1 = np.tanh(z1)
+
+        z2 = np.dot(a1, self.W2) + self.b2
+        a2 = np.tanh(z2)
+
+        z3 = np.dot(a2, self.W3) + self.b3
+        a3 = np.tanh(z3)
+
+        z4 = np.dot(a3, self.W4) + self.b4
+        output = np.tanh(z4)
+
+        return output
+
+    def get_flat_weights(self):
+        """Returns the DNA (all weights flattened into one list)"""
+        return np.concatenate(
             [
-                tf.keras.layers.InputLayer(input_shape=(input_size,)),
-                tf.keras.layers.Dense(hidden_size, activation="tanh"),
-                tf.keras.layers.Dense(output_size, activation="tanh"),
+                self.W1.flatten(),
+                self.b1.flatten(),
+                self.W2.flatten(),
+                self.b2.flatten(),
+                self.W3.flatten(),
+                self.b3.flatten(),
+                self.W4.flatten(),
+                self.b4.flatten(),
             ]
         )
 
-        self.model.build((None, input_size))
-
-    def forward(self, sensors):
-        """
-        Fast inference using __call__ instead of .predict() to reduce overhead
-        """
-
-        input_tensor = tf.convert_to_tensor([sensors], dtype=tf.float32)
-
-        output_tensor = self.model(input_tensor, training=False)
-
-        return output_tensor.numpy().flatten()
-
-    def get_flat_weights(self):
-        """
-        Extracts all weights/biases and flattens them into a single 1D array.
-        Used to create the 'DNA' for the Genetic Algorithm.
-        """
-        weights = self.model.get_weights()
-        flat_weights = np.concatenate([w.flatten() for w in weights])
-        return flat_weights
-
     def set_flat_weights(self, flat_weights):
-        """
-        Takes a 1D array (DNA) and reshapes it back into the model's layers.
-        """
-        weights = []
-        offset = 0
+        """Reconstructs the brain from DNA"""
 
-        for w in self.model.get_weights():
-            shape = w.shape
-            size = np.prod(shape)
+        end_w1 = self.input_size * self.hidden_size
+        self.W1 = flat_weights[0:end_w1].reshape(self.input_size, self.hidden_size)
 
-            chunk = flat_weights[offset : offset + size]
-            reshaped_chunk = chunk.reshape(shape)
-            weights.append(reshaped_chunk)
+        end_b1 = end_w1 + self.hidden_size
+        self.b1 = flat_weights[end_w1:end_b1]
 
-            offset += size
+        end_w2 = end_b1 + self.hidden_size * (self.hidden_size // 2)
+        self.W2 = flat_weights[end_b1:end_w2].reshape(
+            self.hidden_size, self.hidden_size // 2
+        )
 
-        self.model.set_weights(weights)
+        end_b2 = end_w2 + (self.hidden_size // 2)
+        self.b2 = flat_weights[end_w2:end_b2]
+
+        end_w3 = end_b2 + (self.hidden_size // 2) * (self.hidden_size // 4)
+        self.W3 = flat_weights[end_b2:end_w3].reshape(
+            self.hidden_size // 2, self.hidden_size // 4
+        )
+
+        end_b3 = end_w3 + (self.hidden_size // 4)
+        self.b3 = flat_weights[end_w3:end_b3]
+
+        end_w4 = end_b3 + (self.hidden_size // 4) * self.output_size
+        self.W4 = flat_weights[end_b3:end_w4].reshape(
+            self.hidden_size // 4, self.output_size
+        )
+
+        self.b4 = flat_weights[end_w4:]
+
+    def save_model(self, filename="weights_final.npy"):
+        """Saves the weights to a file"""
+        weights = self.get_flat_weights()
+        np.save(filename, weights)
+        print(f"controlador guardado: {filename}")
