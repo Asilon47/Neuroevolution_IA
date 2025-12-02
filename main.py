@@ -13,7 +13,7 @@ from car import (
 )
 from obstacle import Obstacle
 
-MAX_GENS = 200
+MAX_GENS = 1000
 SPAWN_FRAMES = 30
 
 
