@@ -62,7 +62,7 @@ def run_simulation():
             population.evolve()
             obstacles = []
             frame_count = 0
-            if turbo != 0:
+            if turbo != 1:
                 pygame.time.delay(500)
 
         match turbo:
