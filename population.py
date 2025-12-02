@@ -4,11 +4,32 @@ from car import Car
 
 
 class Population:
-    def __init__(self, size=50, mutation_rate=0.20):
+    def __init__(self, size=150, mutation_rate=0.20, load_file=None):
         self.size = size
         self.mutation_rate = mutation_rate
         self.generation = 1
-        self.cars = [Car() for _ in range(size)]
+        self.cars = []
+
+        if load_file:
+            print(f"cargando weights desde {load_file}")
+            dummy_car = Car()
+            if dummy_car.controller.load_model(load_file):
+                base_dna = dummy_car.controller.get_flat_weights()
+
+                for i in range(size):
+                    new_car = Car()
+
+                    new_car.controller.set_flat_weights(base_dna)
+
+                    if i > 0:
+                        mutated_dna = self.mutate(new_car.controller.get_flat_weights())
+                        new_car.controller.set_flat_weights(mutated_dna)
+
+                    self.cars.append(new_car)
+            else:
+                self.cars = [Car() for _ in range(size)]
+        else:
+            self.cars = [Car() for _ in range(size)]
 
     def update(self, obstacles_rects):
         alive_count = 0
@@ -39,7 +60,7 @@ class Population:
 
     def evolve(self):
         self.cars.sort(key=lambda x: x.score, reverse=True)
-        print(f"Gen {self.generation} Best Fitness: {int(self.cars[0].score)}")
+        print(f"Gen {self.generation} mejor fitness: {int(self.cars[0].score)}")
 
         new_cars = []
 

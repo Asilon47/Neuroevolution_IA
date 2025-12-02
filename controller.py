@@ -35,7 +35,6 @@ class NeuralNetwork:
         return output
 
     def get_flat_weights(self):
-        """Returns the DNA (all weights flattened into one list)"""
         return np.concatenate(
             [
                 self.W1.flatten(),
@@ -50,8 +49,6 @@ class NeuralNetwork:
         )
 
     def set_flat_weights(self, flat_weights):
-        """Reconstructs the brain from DNA"""
-
         end_w1 = self.input_size * self.hidden_size
         self.W1 = flat_weights[0:end_w1].reshape(self.input_size, self.hidden_size)
 
@@ -82,7 +79,16 @@ class NeuralNetwork:
         self.b4 = flat_weights[end_w4:]
 
     def save_model(self, filename="weights_final.npy"):
-        """Saves the weights to a file"""
         weights = self.get_flat_weights()
         np.save(filename, weights)
         print(f"controlador guardado: {filename}")
+
+    def load_model(self, filename="weights_final.npy"):
+        try:
+            weights = np.load(filename)
+            self.set_flat_weights(weights)
+            print(f"controlador cargado: {filename}")
+            return True
+        except FileNotFoundError:
+            print(f"no se encontro el archivo {filename}, iniciando desde cero.")
+            return False

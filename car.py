@@ -10,14 +10,11 @@ COLOR_BG = (30, 30, 30)
 COLOR_CAR = (255, 255, 0)
 COLOR_OBSTACLE = (255, 50, 50)
 COLOR_TEXT = (255, 255, 255)
-LASER_DISTANCE = 200
+LASER_DISTANCE = 400
 COLOR_TARGET = (0, 255, 0)
 
 
 def get_distance(sensor_angle, car_x, car_y, obstacles_rects):
-    """
-    Casts a ray to find the distance to the nearest wall OR obstacle.
-    """
     max_dist = LASER_DISTANCE
     rad = math.radians(sensor_angle)
     end_x = car_x + math.cos(rad) * max_dist
@@ -95,8 +92,6 @@ class Car:
         return inputs
 
     def spawn_target(self):
-        """Genera un objetivo aleatorio SOLO para este coche"""
-
         self.target.x = random.randint(50, WIDTH - 50)
         self.target.y = random.randint(50, HEIGHT - 50)
 
@@ -156,10 +151,6 @@ class Car:
         if self.x > WIDTH or self.x < 0 or self.y > HEIGHT or self.y < 0:
             self.alive = False
             self.score -= 20
-            """
-            cancelado porque todos acaban chocando
-            self.score -= 400
-            """
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
