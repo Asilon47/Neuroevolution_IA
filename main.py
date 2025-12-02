@@ -28,7 +28,7 @@ def run_simulation():
     frame_count = 0
     turbo = 0
 
-    population = Population(size=100, load_file="weights_final.npy")
+    population = Population(size=300, load_file="weights_final.npy")
     obstacles = []
 
     running = True
