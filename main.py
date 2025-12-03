@@ -29,8 +29,16 @@ def run_simulation():
     trainning = 0
     while True:
         screen.fill(COLOR_BG)
-        text_surface = font.render("1: Entrenar | 2: Simular mejor controlador", True, COLOR_TEXT)
-        screen.blit(text_surface, (WIDTH // 2 - text_surface.get_width() // 2, HEIGHT // 2 - text_surface.get_height() // 2))
+        text_surface = font.render(
+            "1: Entrenar | 2: Simular mejor controlador", True, COLOR_TEXT
+        )
+        screen.blit(
+            text_surface,
+            (
+                WIDTH // 2 - text_surface.get_width() // 2,
+                HEIGHT // 2 - text_surface.get_height() // 2,
+            ),
+        )
         pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -43,7 +51,6 @@ def run_simulation():
                 elif event.key == pygame.K_2:
                     trainning = 2
                     break
-
 
         match trainning:
             case 1:
@@ -161,7 +168,6 @@ def run_simulation():
                         else:
                             leader.reset()
                             pygame.time.delay(1000)
-
 
                         screen.fill(COLOR_BG)
 
