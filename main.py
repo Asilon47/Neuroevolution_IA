@@ -14,7 +14,7 @@ from car import (
 )
 from obstacle import Obstacle
 
-MAX_GENS = 2000
+MAX_GENS = 1
 SPAWN_FRAMES = 30
 
 
@@ -139,6 +139,7 @@ def run_simulation():
                             clock.tick(FPS)
 
                 pygame.quit()
+                break
             case 2:
                 running = True
                 while running:
@@ -184,6 +185,7 @@ def run_simulation():
                         clock.tick(FPS/2)
 
                     pygame.quit()
+                    break
             case _:
                 print("Opcion no valida")
 
