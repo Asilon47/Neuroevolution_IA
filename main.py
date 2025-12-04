@@ -181,7 +181,7 @@ def run_simulation():
                         screen.blit(font.render(status, True, COLOR_TEXT), (10, 10))
 
                         pygame.display.flip()
-                        clock.tick(FPS)
+                        clock.tick(FPS/2)
 
                     pygame.quit()
             case _:
